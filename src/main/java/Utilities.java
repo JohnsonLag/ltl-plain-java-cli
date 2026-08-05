@@ -1,0 +1,40 @@
+import java.util.Objects;
+
+public class Utilities {
+    // Print to program log or both console and program log.
+    private String user_log_type = "console_and_log";
+
+    // On the console, print standard, quietly, or verbosely.
+    private String user_log_amount = "standard";
+
+    private String log_file_file_name;
+
+    public String getUserLogType() {
+        return user_log_type;
+    }
+
+    public void setUserLogType(String user_log_type) {
+        if (Objects.equals(user_log_type, "standard") ||
+                Objects.equals(user_log_type, "quiet") ||
+                Objects.equals(user_log_type, "verbose")
+        ){
+            this.user_log_type = user_log_type;
+        }
+
+        else {
+            System.out.println("Unrecognized user log type: " + user_log_type);
+
+            // And print to log.
+//             System.out.println("Unrecognized user log type: " + user_log_type);
+
+        }
+    }
+
+    public String getUserLogAmount() {
+        return user_log_amount;
+    }
+
+    public void setUserLogAmount(String user_log_amount) {
+        this.user_log_amount = user_log_amount;
+    }
+}

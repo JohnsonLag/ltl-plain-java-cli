@@ -1,0 +1,1 @@
+Local text library project, built in Java, and to run on the command-line interface.
