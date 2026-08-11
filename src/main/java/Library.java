@@ -1,32 +1,95 @@
-
+import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public class Library {
-    private Connection db = null;
-    private ArrayList<Entry> searchResults;
+    private Connection db;
+    private ArrayList<Entry> search_results;
 
     public void getLatestEntryId(){}
 
-    public Entry getUrlResponse(Entry entry){}
-    public void addEntries(String file_path, String file_type){}
+    public Entry getUrlResponse(Entry entry){
+        return new Entry();
+    }
 
-    public ArrayList<Entry> searchLibrary(String query){}
+    public void addEntries(String file_path, String file_type){
+        // Open file.
 
-    public ArrayList<Entry> getSearchResults(){}
+        // Start for-loop.
+        // Compare each line to URL regex.
 
-    public Entry getEntry(id entry_id){}
+        // Reject if fail and continue.
 
-    public void viewEntry(id entry_id){}
+        // Document doc = jsoup(url);
+        // String title = doc.title;
+        // System.out.println(typeof(doc.body));
 
-    public void setEntry(id entry_id){}
+        // Store fields in db.
+        // Entry entry = new Entry();
+        // entry.setUrl(url);
+        // entry.setTitle(title);
+        // entry.setContent(content);
 
-    public void updateEntry(id entry_id){
+        // End for-loop.
+
+        // Close file.
+    }
+
+    public ArrayList<Entry> searchLibrary(String query){
+        // Connect to db.
+
+        // MATCH(...) AGAINST
+
+        // ArrayList<Entry> search_results = new ArrayList<Entry>(10);
+
+        // Start for-loop.
+        /*
+        result = db_results.get(i);
+        Entry entry = new Entry(result.entry_id, result.url, result.title, result.content, result.notes);
+        search_results.add(entry);
+         */
+
+        // return search_results;
+        return new ArrayList<Entry>();
+    }
+
+    public ArrayList<Entry> getSearchResults(){
+        return search_results;
+    }
+
+    public void printSearchResults(){
+        ArrayList<Entry> search_results = this.getSearchResults();
+
+        // Start for-loop.
+        /*
+        entry = search_results.get(i);
+        System.out.println( "Entry ID: " + entry.getEntryId() + "\n" +
+                            "URL: "      + entry.getUrl()     + "\n" +
+                            "Title: "    + entry.getTitle()   + "\n" +
+                            "Content: "  + entry.getContent() + "\n" +
+                            "Notes: "    + entry.getNotes()   + "\n\n"
+        );
+         */
+    }
+
+    public Entry getEntry(int entry_id){
+        return new Entry();
+    }
+
+    public void viewEntry(int entry_id){}
+
+    public void setEntry(int entry_id){}
+
+    public void updateEntry(int entry_id){
         setEntry(entry_id);
     }
 
-    public void deleteEntry(id entry_id){}
+    public void deleteEntry(int entry_id){
+        // Are you sure?
+        // System.in
+        // if (answer.toLowerCase().equals("y"))
+            // DELETE FROM TABLE %s where entry_id = %s
+    }
 
 }
