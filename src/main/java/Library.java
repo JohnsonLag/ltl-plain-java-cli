@@ -3,6 +3,16 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
 public class Library {
     private Connection db;
     private ArrayList<Entry> search_results;
@@ -90,6 +100,38 @@ public class Library {
         // System.in
         // if (answer.toLowerCase().equals("y"))
             // DELETE FROM TABLE %s where entry_id = %s
+    }
+
+    public static void testFetch(){
+        String testUrl = "https://en.wikipedia.org/wiki/Main_Page";
+        String titleFileName = "fetched-title.txt";
+        String bodyFileName = "fetched-body.txt";
+
+        try (
+                BufferedWriter titleFile = new BufferedWriter(new FileWriter(titleFileName));
+                BufferedWriter bodyFile = new BufferedWriter(new FileWriter(bodyFileName))
+        ){
+            Document doc = Jsoup.connect(testUrl).get();
+            String title = doc.title();
+
+            // Page title.
+            System.out.println(title);
+            titleFile.write(title);
+
+            // Get page body.
+            Element body = doc.body();
+
+            // Formatted text, with whitespace characters.
+            String wholeBody = body.wholeText();
+            bodyFile.write(wholeBody);
+
+            System.out.println("Successfully wrote to the files.");
+        } catch (IOException e) {
+            System.out.println("Error writing files.");
+        } finally {
+            System.out.println("Ending test fetch.");
+        }
+
     }
 
 }

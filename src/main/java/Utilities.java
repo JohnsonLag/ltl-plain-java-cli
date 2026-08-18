@@ -1,4 +1,14 @@
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Objects;
+
+
 
 public class Utilities {
     // Print to program log or both console and program log.
@@ -37,4 +47,37 @@ public class Utilities {
     public void setUserLogAmount(String user_log_amount) {
         this.user_log_amount = user_log_amount;
     }
+
+    public static void testFetch(){
+        String testUrl = "https://en.wikipedia.org/wiki/Main_Page";
+        String titleFileName = "fetched-title.txt";
+        String bodyFileName = "fetched-body.txt";
+
+        try (
+                BufferedWriter titleFile = new BufferedWriter(new FileWriter(titleFileName));
+                BufferedWriter bodyFile = new BufferedWriter(new FileWriter(bodyFileName))
+        ){
+            Document doc = Jsoup.connect(testUrl).get();
+            String title = doc.title();
+
+            // Page title.
+            System.out.println(title);
+            titleFile.write(title);
+
+            // Get page body.
+            Element body = doc.body();
+
+            // Formatted text, with whitespace characters.
+            String wholeBody = body.wholeText();
+            bodyFile.write(wholeBody);
+
+            System.out.println("Successfully wrote to the files.");
+        } catch (IOException e) {
+            System.out.println("Error writing files.");
+        } finally {
+            System.out.println("Ending test fetch.");
+        }
+
+    }
+
 }

@@ -25,8 +25,9 @@ public class Main {
         }
     }
     public static boolean continue_or_quit(String answer){
-        if (answer.toLowerCase().equals("q") ||
-                answer.toLowerCase().equals("quit")
+        if (answer.toLowerCase().equals("q")
+                || answer.toLowerCase().equals("quit")
+                || answer.equals("1")
         ){
             return false;
         }
@@ -49,6 +50,15 @@ public class Main {
                 Main.print_event_loop_dialogue("simple");
                 System.out.print("\nInput: ");
                 answer = scanner.nextLine();
+				
+				switch(answer.toLowerCase()){
+					case "testfetch":
+						Utilities.testFetch();
+						break;
+					default:
+						break;
+				}
+				
             } while(Main.continue_or_quit(answer) && run_mode.equals("evaluate_and_exit") == false);
 
             scanner.close();
