@@ -17,6 +17,14 @@ public class Library {
     private Connection db;
     private ArrayList<Entry> search_results;
 
+    public Connection getConnection(){
+        return this.db;
+    }
+
+    public void setConnection(Connection db){
+        this.db = db;
+    }
+
     public void getLatestEntryId(){}
 
     public Entry getUrlResponse(Entry entry){

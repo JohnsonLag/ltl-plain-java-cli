@@ -1,4 +1,10 @@
 import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import java.io.File;                  // Import the File class
+import java.io.FileNotFoundException; // Import this class to handle errors
 
 public class Main {
     private static String[] simple_event_loop_dialogue = {
@@ -35,33 +41,87 @@ public class Main {
         return true;
     }
 
+    public static void printExitMessage(){
+        System.out.println("Exiting program.");
+    }
     public static void main(String[] args) {
         String run_mode = "interactive";
         String answer = "quit";
-//        String[] command_arr = args.split(" ");
-        Scanner scanner = new Scanner(System.in, System.getProperty("stdin.encoding"));
+        // String[] command_arr = args.split(" ");
+        File envFile = new File(".env");
+        Connection conn = null;
+        Library ltl = new Library();
+        String dbUrl = "", dbUser = "", dbPassword = "";
 
-//        if (command_arr.length == 1){
-        if (run_mode.toLowerCase().equals("interactive")){
-//            run_mode = "interactive";
+        try (Scanner envReader = new Scanner(envFile)) {
 
-            do {
-                System.out.println();
-                Main.print_event_loop_dialogue("simple");
-                System.out.print("\nInput: ");
-                answer = scanner.nextLine();
-				
-				switch(answer.toLowerCase()){
-					case "testfetch":
-						Utilities.testFetch();
-						break;
-					default:
-						break;
-				}
-				
-            } while(Main.continue_or_quit(answer) && run_mode.equals("evaluate_and_exit") == false);
+            // Get .env credentials.
+            while (envReader.hasNextLine()){
+                String line = envReader.nextLine();
+                String[] arr = new String[2];
+                arr = line.split("=");
 
-            scanner.close();
+                switch(arr[0]){
+                    case "DB_URL":
+                        dbUrl = arr[1];
+                        break;
+                    case "DB_USER":
+                        dbUser = arr[1];
+                        break;
+                    case "DB_PASSWORD":
+                        dbPassword = arr[1];
+                        break;
+                    default:
+                        System.out.println("Unrecognized option: " + arr[0]);
+                        break;
+                }
+            }
+
+            // DriverManager.getConnection("jdbc:mysql://host/db?" + "user=yourUser&password=yourPassword");
+            conn = DriverManager.getConnection(dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword);
+            ltl.setConnection(conn);
+
+        } catch (SQLException ex) {
+            System.out.println("Could not connect to database.");
+
+            String cleanedMessage = ex.getMessage();
+            cleanedMessage = cleanedMessage.replaceAll(dbUrl, "DB_URL");
+            cleanedMessage = cleanedMessage.replaceAll(dbUser, "DB_USER");
+            cleanedMessage = cleanedMessage.replaceAll(dbPassword, "DB_PASSWORD");
+
+            System.out.println("SQLException: " + cleanedMessage);
+            System.out.println("SQLState: " + ex.getSQLState());
+            System.out.println("VendorError: " + ex.getErrorCode());
+            Main.printExitMessage();
+            return;
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found.");
+            Main.printExitMessage();
+            throw new RuntimeException(e);
+        }
+
+        try (Scanner scanner = new Scanner(System.in, System.getProperty("stdin.encoding"))) {
+            if (run_mode.toLowerCase().equals("interactive")) {
+                // Event loop.
+                do {
+                    System.out.println();
+                    Main.print_event_loop_dialogue("simple");
+                    System.out.print("\nInput: ");
+                    answer = scanner.nextLine();
+
+                    switch (answer.toLowerCase()) {
+                        case "testfetch":
+                            Utilities.testFetch();
+                            break;
+                        default:
+                            break;
+                    }
+                } while (Main.continue_or_quit(answer) && run_mode.equals("evaluate_and_exit") == false);
+            }
+        } catch (Exception ex) {
+                System.out.println("Exception: " + ex);
+        } finally {
+            Main.printExitMessage();
         }
 
         return;
