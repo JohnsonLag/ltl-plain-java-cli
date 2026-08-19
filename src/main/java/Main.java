@@ -77,8 +77,8 @@ public class Main {
                 }
             }
 
-            // DriverManager.getConnection("jdbc:mysql://host/db?" + "user=yourUser&password=yourPassword");
-            conn = DriverManager.getConnection(dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword);
+            String connString = "" + dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword;
+            conn = DriverManager.getConnection(connString);
             ltl.setConnection(conn);
 
         } catch (SQLException ex) {
