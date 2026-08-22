@@ -1,84 +1,94 @@
 public class Entry {
-    private int row_id;
-    private int entry_id;
-    private String url;
-    private String title;
-    private String content;
-    private String notes;
+    private int rowId;
+    private int entryId;
+    private String entryUrl;
+    private String entryTitle;
+    private String entryBody;
+    private String entryNotes;
+	private final int DEFAULT_ROW_ID = -1;
+	private final int DEFAULT_ENTRY_ID = -1;
 
     public int getRowId() {
-        return row_id;
+        return rowId;
     }
 
-    public void setRowId(int row_id) {
-        this.row_id = row_id;
+    public void setRowId(int rowId) {
+        this.rowId = rowId;
     }
 
     public int getEntryId() {
-        return entry_id;
+        return entryId;
     }
 
-    public void setEntryId(int entry_id) {
-        this.entry_id = entry_id;
+    public void setEntryId(int entryId) {
+        this.entryId = entryId;
     }
 
-    public String getUrl() {
-        return url;
+    public String getEntryUrl() {
+        return entryUrl;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setEntryUrl(String entryUrl) {
+        this.entryUrl = entryUrl;
     }
 
-    public String getTitle() { return title; }
+    public String getEntryTitle() {
+		return entryTitle;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setEntryTitle(String entryTitle) {
+        this.entryTitle = entryTitle;
     }
 
-    public String getContent() { return content; }
+    public String getEntryContent() {
+		return entryBody;
+	}
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setEntryContent(String entryBody) {
+        this.entryBody = entryBody;
     }
 
-    public String getNotes() { return notes; }
+    public String getEntryNotes() {
+		return entryNotes;
+	}
 
-    public void setNotes(String notes) { this.notes = notes; }
+    public void setEntryNotes(String entryNotes) {
+		this.entryNotes = entryNotes;
+	}
 
-    public Entry(int row_id, int entry_id, String url, String title, String content, String notes) {
-        this.row_id = row_id;
-        this.entry_id = entry_id;
-        this.url = url;
-        this.title = title;
-        this.content = content;
-        this.notes = notes;
+    public Entry(int rowId, int entryId, String entryUrl, String entryTitle, String entryBody, String entryNotes) {
+        this.rowId = rowId;
+        this.entryId = entryId;
+        this.entryUrl = entryUrl;
+        this.entryTitle = entryTitle;
+        this.entryBody = entryBody;
+        this.entryNotes = entryNotes;
     }
 
-    public Entry(int entry_id, String url, String title, String content, String notes) {
-        this.row_id = -1;
-        this.entry_id = entry_id;
-        this.url = url;
-        this.title = title;
-        this.content = content;
-        this.notes = notes;
+    public Entry(int entryId, String entryUrl, String entryTitle, String entryBody, String entryNotes) {
+        this.rowId = DEFAULT_ROW_ID;
+        this.entryId = entryId;
+        this.entryUrl = entryUrl;
+        this.entryTitle = entryTitle;
+        this.entryBody = entryBody;
+        this.entryNotes = entryNotes;
     }
 
-    public Entry(String url, String title, String content, String notes) {
-        this.row_id = -1;
-        this.entry_id = -1;
-        this.url = url;
-        this.title = title;
-        this.content = content;
-        this.notes = notes;
+    public Entry(String entryUrl, String entryTitle, String entryBody, String entryNotes) {
+        this.rowId = DEFAULT_ROW_ID;
+        this.entryId = DEFAULT_ENTRY_ID;
+        this.entryUrl = entryUrl;
+        this.entryTitle = entryTitle;
+        this.entryBody = entryBody;
+        this.entryNotes = entryNotes;
     }
 
     public Entry(){
-        this.row_id = -1;
-        this.entry_id = -1;
-        this.url = null;
-        this.title = null;
-        this.content = null;
-        this.notes = null;
+        this.rowId = DEFAULT_ROW_ID;
+        this.entryId = DEFAULT_ENTRY_ID;
+        this.entryUrl = null;
+        this.entryTitle = null;
+        this.entryBody = null;
+        this.entryNotes = null;
     }
 }

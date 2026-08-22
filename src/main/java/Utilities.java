@@ -8,8 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Objects;
 
-
-
 public class Utilities {
     // Print to program log or both console and program log.
     private String user_log_type = "console_and_log";
