@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,7 +9,17 @@ import java.io.File;                  // Import the File class
 import java.io.FileNotFoundException; // Import this class to handle errors
 
 public class Main {
-    private static String[] simple_event_loop_dialogue = {
+    private Library library;
+	
+	public setLibrary(Library library){
+		this.library = library;
+	}
+	
+	public getLibrary(){
+		return this.library;
+	}
+	
+	private static String[] simple_event_loop_dialogue = {
             "1. quit (q)\n",
             "2. create input-file <file_name>\n",
             "3. read <entry_id>\n",
@@ -30,6 +42,7 @@ public class Main {
             System.out.print(dialogue[i]);
         }
     }
+
     public static boolean continue_or_quit(String answer){
         if (answer.toLowerCase().equals("q")
                 || answer.toLowerCase().equals("quit")
@@ -44,15 +57,37 @@ public class Main {
     public static void printExitMessage(){
         System.out.println("Exiting program.");
     }
+
+    public static void parseAndRun(String line, String[] arr){
+        String firstWord = arr[0].toLowerCase();
+        HashMap<String, String> hashMap;
+
+        switch (firstWord) {
+            case "create":
+                hashMap = Library.parseCreate(line, arr);
+				// this.getLibrary().createEntries(hashMap);
+//                Library.createEntries(hashMap);
+                break;
+            case "testfetch":
+                Utilities.testFetch();
+                break;
+            default:
+                break;
+        }
+    }
+
     public static void main(String[] args) {
         String run_mode = "interactive";
         String answer = "quit";
-        // String[] command_arr = args.split(" ");
+        
         File envFile = new File(".env");
         Connection conn = null;
         Library ltl = new Library();
-        String dbUrl = "", dbUser = "", dbPassword = "";
-
+        String dbUrl = "", dbUser = "", dbPassword = "", defaultTable = "";
+		
+		Main.setLibrary(ltl);
+		
+		// Reading the .env file.
         try (Scanner envReader = new Scanner(envFile)) {
 
             // Get .env credentials.
@@ -71,6 +106,9 @@ public class Main {
                     case "DB_PASSWORD":
                         dbPassword = arr[1];
                         break;
+                    case "DEFAULT_TABLE":
+                        defaultTableName = arr[1];
+                        break;
                     default:
                         System.out.println("Unrecognized option: " + arr[0]);
                         break;
@@ -80,6 +118,7 @@ public class Main {
             String connString = "" + dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword;
             conn = DriverManager.getConnection(connString);
             ltl.setConnection(conn);
+            ltl.setTableName(defaultTableName);
 
         } catch (SQLException ex) {
             System.out.println("Could not connect to database.");
@@ -100,24 +139,24 @@ public class Main {
             throw new RuntimeException(e);
         }
 
+		// Event loop.
         try (Scanner scanner = new Scanner(System.in, System.getProperty("stdin.encoding"))) {
             if (run_mode.toLowerCase().equals("interactive")) {
-                // Event loop.
                 do {
                     System.out.println();
                     Main.print_event_loop_dialogue("simple");
                     System.out.print("\nInput: ");
                     answer = scanner.nextLine();
 
-                    switch (answer.toLowerCase()) {
-                        case "testfetch":
-                            Utilities.testFetch();
-                            break;
-                        default:
-                            break;
-                    }
+                    String[] stringArr = answer.split(" ");
+                    Library.parseAndRun(answer, stringArr);
+                    
                 } while (Main.continue_or_quit(answer) && run_mode.equals("evaluate_and_exit") == false);
             }
+			
+			else {
+				// String[] command_arr = args.split(" ");
+			}
         } catch (Exception ex) {
                 System.out.println("Exception: " + ex);
         } finally {
