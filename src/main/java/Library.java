@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.HashMap;
 
 import java.io.File;
@@ -20,8 +17,9 @@ public class Library {
     private Connection db;
     private String infileName;
     private String tableName;
-    private ArrayList<Entry> search_results;
-    
+    private ArrayList<Entry> searchResults;
+    private ArrayList<Entry> manyEntries;
+
     public Connection getConnection(){
         return this.db;
     }
@@ -60,7 +58,8 @@ public class Library {
 
             entryId = rs.getInt("entry_id");
 		} catch (Exception e){
-			 throw new RuntimeException(e);
+			 System.out.println(e);
+//			 throw new RuntimeException(e);
 		}
 		
 		return entryId;
@@ -85,18 +84,19 @@ public class Library {
             while (fileReader.hasNextLine()) {
                 String entryUrl = fileReader.nextLine();
 
+                int entryId = this.getLatestEntryId() + 1;
+
                 // Compare each line to URL regex.
                 // Reject if fail and continue.
 
                 // Get document attributes.
                 Document doc = Jsoup.connect(entryUrl).get();
-                Element body = doc.body();
-
-                String tableName = this.getTableName() + " ";
-                int entryId = this.getLatestEntryId() + 1;
                 String entryTitle = doc.title();
+
+                Element body = doc.body();
                 String entryBody = body.wholeText(); // Formatted text, with whitespace characters.
 
+                String tableName = this.getTableName() + " ";
                 String line = "INSERT INTO " + tableName +
 					"(entry_id, entry_url, entry_title, entry_body) " + 
 					"VALUES(?, ?, ?, ?)";
@@ -110,62 +110,162 @@ public class Library {
 				
 				if (result == 0){
 					System.out.println("Could not execute INSERT to create entry for url: " + entryUrl);
-				}
-
-                else if (result == 1){
+				} else if (result == 1){
                     System.out.println("Successful insertion for url: " + entryUrl);
                 }
 			}
 		} catch (FileNotFoundException e) {
-			System.out.println("An error occurred.");
-			e.printStackTrace();
+			System.out.println(e);
+//			System.out.println("An error occurred.");
+//			e.printStackTrace();
 		} catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println(e);
+//            throw new RuntimeException(e);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(e);
+//            throw new RuntimeException(e);
         }
     }
 
-    public ArrayList<Entry> searchLibrary(String query){
-        // Connect to db.
+    public ArrayList<Entry> searchLibrary(String searchString){
+        ArrayList<Entry> searchResults = new ArrayList<Entry>(10);
+        Connection conn = this.getConnection();
+        Entry entry = new Entry();
+        PreparedStatement ps;
 
-        // SELECT col1, ..., colN FROM table_name WHERE MATCH(entry_url, entry_title, entry_body, entry_notes) AGAINST ('search term' IN NATURAL LANGUAGE MODE);
+        String tableName = this.getTableName() + " ";
+        String line = "SELECT entry_id, entry_url, entry_title, entry_body, entry_notes FROM " + tableName + "WHERE MATCH(entry_url, entry_title, entry_body, entry_notes) AGAINST (?) IN NATURAL LANGUAGE MODE)";
 
-        // ArrayList<Entry> search_results = new ArrayList<Entry>(10);
+        System.out.println("Retrieving results.");
+        try {
+            ps = conn.prepareStatement(line);
+            ps.setString(1, searchString);
 
-        // Start for-loop.
-        /*
-        result = db_results.get(i);
-        Entry entry = new Entry(result.entry_id, result.url, result.title, result.content, result.notes);
-        search_results.add(entry);
-         */
+            ps.execute();
+            ResultSet rs = ps.getResultSet();
 
-        // return search_results;
-        return new ArrayList<Entry>();
+            while (rs.next()){
+                int entryId = rs.getInt("entry_id");
+                String entryUrl = rs.getString("entry_url");
+                String entryTitle = rs.getString("entry_title");
+                String entryBody = rs.getString("entry_body");
+                String entryNotes = rs.getString("entry_notes");
+
+                entry.setEntryId(entryId);
+                entry.setEntryUrl(entryUrl);
+                entry.setEntryTitle(entryTitle);
+                entry.setEntryBody(entryBody);
+                entry.setEntryNotes(entryNotes);
+
+                searchResults.add(entry);
+            }
+
+            System.out.println(searchResults.size() + " result(s) found.");
+        } catch (SQLException e) {
+            System.out.println(e);
+//            throw new RuntimeException(e);
+        }
+
+         return searchResults;
     }
 
     public ArrayList<Entry> getSearchResults(){
-        return search_results;
+        return searchResults;
+    }
+
+    public void setSearchResults(ArrayList<Entry> searchResults){
+        this.searchResults = searchResults;
+    }
+
+    public ArrayList<Entry> getManyEntries(){
+        return manyEntries;
+    }
+
+    public void setManyEntries(ArrayList<Entry> manyResults){
+        this.manyEntries = manyEntries;
     }
 
     public void printSearchResults(){
-        ArrayList<Entry> search_results = this.getSearchResults();
+        ArrayList<Entry> searchResults = this.getSearchResults();
 
-        // Start for-loop.
-        /*
-        entry = search_results.get(i);
-        System.out.println( "Entry ID: " + entry.getEntryId() + "\n" +
-                            "URL: "      + entry.getUrl()     + "\n" +
-                            "Title: "    + entry.getTitle()   + "\n" +
-                            "Content: "  + entry.getContent() + "\n" +
-                            "Notes: "    + entry.getNotes()   + "\n\n"
-        );
-         */
+        for (Entry entry : searchResults){
+            System.out.println(
+                    "Entry ID: " + entry.getEntryId() + "\n" +
+                    "URL: "      + entry.getEntryUrl()     + "\n" +
+                    "Title: "    + entry.getEntryTitle()   + "\n" +
+//                    "Content: "  + entry.getEntryBody() + "\n" +
+                    "Notes: "    + entry.getEntryNotes()   + "\n\n"
+            );
+        }
     }
 
+    public ArrayList<Entry> queryManyEntries(){
+        ArrayList<Entry> manyResults = new ArrayList<Entry>(10);
+        Connection conn = this.getConnection();
+        Entry entry = new Entry();
+        PreparedStatement ps;
+
+        String tableName = this.getTableName() + " ";
+        String line = "SELECT entry_id, entry_url, entry_title, entry_body, entry_notes FROM " + tableName + "LIMIT 50";
+
+        System.out.println("Retrieving results.");
+        try {
+            ps = conn.prepareStatement(line);
+
+            ps.execute();
+            ResultSet rs = ps.getResultSet();
+
+            while (rs.next()){
+                int entryId = rs.getInt("entry_id");
+                String entryUrl = rs.getString("entry_url");
+                String entryTitle = rs.getString("entry_title");
+                String entryBody = rs.getString("entry_body");
+                String entryNotes = rs.getString("entry_notes");
+
+                entry.setEntryId(entryId);
+                entry.setEntryUrl(entryUrl);
+                entry.setEntryTitle(entryTitle);
+                entry.setEntryBody(entryBody);
+                entry.setEntryNotes(entryNotes);
+
+                manyResults.add(entry);
+            }
+
+            System.out.println(manyResults.size() + " result(s) found.");
+        } catch (SQLException e) {
+            System.out.println(e);
+//            throw new RuntimeException(e);
+        }
+
+        this.setManyEntries(manyResults);
+        return manyResults;
+    }
+
+    public void printManyEntries(){
+        ArrayList<Entry> manyEntries = this.getManyEntries();
+
+        for (Entry entry : manyEntries){
+            System.out.println(
+                    "Entry ID: " + entry.getEntryId() + "\n" +
+                            "URL: "      + entry.getEntryUrl()     + "\n" +
+                            "Title: "    + entry.getEntryTitle()   + "\n" +
+//                    "Content: "  + entry.getEntryBody() + "\n" +
+                            "Notes: "    + entry.getEntryNotes()   + "\n\n"
+            );
+        }
+    }
+
+    public static void readEntry(Entry entry){
+		System.out.println("\nEntry ID: " + entry.getEntryId());
+		System.out.println("Entry title: " + entry.getEntryTitle());
+		System.out.println("Entry URL: " + entry.getEntryUrl());
+		System.out.println("Entry body:\n\n" + entry.getEntryBody());
+		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
+	}
+
     public Entry getEntry(int entryId){
-		Connection conn = this.getConnection();
-		Entry entry = new Entry();
+        Connection conn = this.getConnection();
+        Entry entry = new Entry();
 
         try {
 
@@ -177,50 +277,72 @@ public class Library {
             ps.setInt(1, entryId);
 
             ResultSet rs = ps.executeQuery();
-			rs.next();
+            rs.next();
 
-			int rowId = rs.getInt("row_id");
-			String entryUrl = rs.getString("entry_url");
-			String entryTitle = rs.getString("entry_title");
-			String entryBody = rs.getString("entry_body");
-			String entryNotes = rs.getString("entry_notes");
-			
-			entry.setRowId(rowId);
-			entry.setEntryId(entryId);
-			entry.setEntryUrl(entryUrl);
-			entry.setEntryTitle(entryTitle);
-			entry.setEntryBody(entryBody);
-			entry.setEntryNotes(entryNotes);
-			
-		} catch (Exception e){
-			throw new RuntimeException(e);
-		}	
-		
-		return entry;
+            int rowId = rs.getInt("row_id");
+            String entryUrl = rs.getString("entry_url");
+            String entryTitle = rs.getString("entry_title");
+            String entryBody = rs.getString("entry_body");
+            String entryNotes = rs.getString("entry_notes");
+
+            entry.setRowId(rowId);
+            entry.setEntryId(entryId);
+            entry.setEntryUrl(entryUrl);
+            entry.setEntryTitle(entryTitle);
+            entry.setEntryBody(entryBody);
+            entry.setEntryNotes(entryNotes);
+
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
+        return entry;
     }
 
-    public static void readEntry(Entry entry){
-		System.out.println("\nEntry ID: " + entry.getEntryId());
-		System.out.println("Entry title: " + entry.getEntryTitle());
-		System.out.println("Entry URL: " + entry.getEntryUrl());
-		System.out.println("Entry body:\n\n" + entry.getEntryBody());
-		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
-	}
-
-    public void setEntry(int entry_id){
+    public void setEntry(int entryId){
 
 
     }
 
-    public void updateEntry(int entry_id){
-        setEntry(entry_id);
+    public void updateEntry(int entryId){
+        setEntry(entryId);
     }
 
-    public void deleteEntry(int entry_id){
-        // Are you sure?
-        // System.in
-        // if (answer.toLowerCase().equals("y"))
-            // DELETE FROM TABLE %s where entry_id = %s
+    public void deleteEntry(int entryId){
+        Connection conn = this.getConnection();
+        Scanner scanner = new Scanner(System.in);
+        String answer = "";
+        PreparedStatement ps;
+
+        do {
+            System.out.println("Are you sure you want to delete entry " + entryId + "?");
+            answer = scanner.nextLine();
+
+            try {
+                if (answer.equalsIgnoreCase("y")){
+                    String tableName = this.getTableName() + " ";
+                    String line = "DELETE FROM " + tableName + "WHERE entry_id = ?";
+                    ps = conn.prepareStatement(line);
+                    ps.setInt(1, entryId);
+
+                    int result = ps.executeUpdate();
+
+                    if (result == 0){
+                        System.out.println("Could not execute DELETE for entry " + entryId + ".");
+                    } else if (result == 1){
+                        System.out.println("Successful deletion for entry " + entryId + ".");
+                    }
+                } else if (answer.equalsIgnoreCase("n")){
+                    System.out.println("Entry will not be deleted.");
+                    return;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        } while (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("n"));
+
+        scanner.close();
     }
 
     public static void parseCreate(String line, String[] arr, HashMap<String, String> hashMap) {
@@ -245,8 +367,20 @@ public class Library {
         }
     }
 
-    public static int parseRead(String line, String[] arr) {
-        return Integer.parseInt(arr[1]);
+    public static String parseRead(String line, String[] arr) {
+        String value = arr[1];
+        try {
+            int resultId = Integer.parseInt(value);
+            return resultId + "";
+        } catch (Exception e) {
+            if (value.equalsIgnoreCase("search") ||
+                    value.equalsIgnoreCase("results") ||
+                    value.equalsIgnoreCase("search-results")
+            ){
+                return "search-results";
+            }
+            return "unrecognized";
+        }
     }
 	
 	public void testConnection(){
@@ -269,9 +403,20 @@ public class Library {
             case "read":
             case "r":
             case "view":
-                int readEntryId = Library.parseRead(line, arr);
-                Entry readEntry = this.getEntry(readEntryId);
-                Library.readEntry(readEntry);
+                String readResult = Library.parseRead(line, arr);
+
+                if (readResult.equalsIgnoreCase("search-results")) {
+                    this.printSearchResults();
+                } else if (readResult.equalsIgnoreCase("unrecognized")) {
+                    System.out.println("Unrecognized read option: " + arr[1]);
+                } else if (readResult.equalsIgnoreCase("all")) {
+                    this.queryManyEntries();
+                    this.printManyEntries();
+                } else {
+                    int readEntryId = Integer.parseInt(readResult);
+                    Entry readEntry = this.getEntry(readEntryId);
+                    Library.readEntry(readEntry);
+                }
                 break;
             case "testfetch":
             case "tfetch":
