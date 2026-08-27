@@ -40,11 +40,11 @@ public class Entry {
         this.entryTitle = entryTitle;
     }
 
-    public String getEntryContent() {
+    public String getEntryBody() {
 		return entryBody;
 	}
 
-    public void setEntryContent(String entryBody) {
+    public void setEntryBody(String entryBody) {
         this.entryBody = entryBody;
     }
 

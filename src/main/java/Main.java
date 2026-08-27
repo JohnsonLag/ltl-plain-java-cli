@@ -4,18 +4,17 @@ import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import java.io.File;                  // Import the File class
-import java.io.FileNotFoundException; // Import this class to handle errors
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class Main {
     private Library library;
 	
-	public setLibrary(Library library){
+	public void setLibrary(Library library){
 		this.library = library;
 	}
 	
-	public getLibrary(){
+	public Library getLibrary(){
 		return this.library;
 	}
 	
@@ -58,34 +57,16 @@ public class Main {
         System.out.println("Exiting program.");
     }
 
-    public static void parseAndRun(String line, String[] arr){
-        String firstWord = arr[0].toLowerCase();
-        HashMap<String, String> hashMap;
-
-        switch (firstWord) {
-            case "create":
-                hashMap = Library.parseCreate(line, arr);
-				// this.getLibrary().createEntries(hashMap);
-//                Library.createEntries(hashMap);
-                break;
-            case "testfetch":
-                Utilities.testFetch();
-                break;
-            default:
-                break;
-        }
-    }
-
-    public static void main(String[] args) {
+    public void main(String[] args) {
         String run_mode = "interactive";
         String answer = "quit";
         
         File envFile = new File(".env");
         Connection conn = null;
         Library ltl = new Library();
-        String dbUrl = "", dbUser = "", dbPassword = "", defaultTable = "";
+        String dbUrl = "", dbUser = "", dbPassword = "", defaultTableName = "";
 		
-		Main.setLibrary(ltl);
+		this.setLibrary(ltl);
 		
 		// Reading the .env file.
         try (Scanner envReader = new Scanner(envFile)) {
@@ -115,7 +96,7 @@ public class Main {
                 }
             }
 
-            String connString = "" + dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword;
+            String connString = dbUrl + "?" + "user=" + dbUser + "&password=" + dbPassword;
             conn = DriverManager.getConnection(connString);
             ltl.setConnection(conn);
             ltl.setTableName(defaultTableName);
@@ -149,7 +130,7 @@ public class Main {
                     answer = scanner.nextLine();
 
                     String[] stringArr = answer.split(" ");
-                    Library.parseAndRun(answer, stringArr);
+                    ltl.parseAndRun(answer, stringArr);
                     
                 } while (Main.continue_or_quit(answer) && run_mode.equals("evaluate_and_exit") == false);
             }

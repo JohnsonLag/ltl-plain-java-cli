@@ -1,7 +1,5 @@
+import java.sql.*;
 import java.util.ArrayList;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -24,11 +22,11 @@ public class Library {
     private String tableName;
     private ArrayList<Entry> search_results;
     
-    public static Connection getConnection(){
+    public Connection getConnection(){
         return this.db;
     }
     
-    public static void setConnection(Connection db){
+    public void setConnection(Connection db){
         this.db = db;
     }
 
@@ -49,18 +47,17 @@ public class Library {
     }
 
     public int getLatestEntryId(){
-		Connection conn = Library.getConnection();
+		Connection conn = this.getConnection();
 		String line = "SELECT entry_id FROM ? ORDER BY entry_id DESC LIMIT 1";
 		int entryId = 0;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(line);
-			ps.setString(1, this.getTableName);
+			ps.setString(1, this.getTableName());
 			ResultSet rs = ps.executeQuery();
 			entryId = rs.getInt("entry_id");
 		} catch (Exception e){
-			// throw new RuntimeException(e);
-			System.out.println(e);
+			 throw new RuntimeException(e);
 		}
 		
 		return entryId;
@@ -72,9 +69,9 @@ public class Library {
     }
 
     public void createEntries(HashMap<String, String> hashMap){
-		int entryId = 0;
+		int entryId = 0, result = 0;
 		String entryUrl = "", entryTitle = "", entryBody = "";
-		Connection conn = Library.getConnection();
+		Connection conn = this.getConnection();
 		PreparedStatement ps;
 		
         // Open file.
@@ -121,11 +118,7 @@ public class Library {
 		} catch (FileNotFoundException e) {
 			System.out.println("An error occurred.");
 			e.printStackTrace();
-		} finally {
-			ps.close();
-			fileReader.close();
 		}
-
     }
 
     public ArrayList<Entry> searchLibrary(String query){
@@ -166,24 +159,26 @@ public class Library {
     }
 
     public Entry getEntry(int entryId){
-		Connection conn = Library.getConnection();
-        String line = "SELECT row_id, entry_url, entry_title, entry_body, entry_notes " +
-			"FROM ? WHERE entry_id = ?";
+		Connection conn = this.getConnection();
 		Entry entry = new Entry();
-		
-		try {
-			PreparedStatement ps = conn.prepareStatement(line);
-			
-			ps.setString(1, this.getTableName());
-			ps.setInt(2, entryId);
-			
-			ResultSet rs = ps.executeQuery();
-			
+
+        try {
+
+            tableName = this.getTableName() + " ";
+
+            String line = "SELECT row_id, entry_url, entry_title, entry_body, entry_notes " + "FROM " + tableName + "WHERE entry_id = ?";
+            PreparedStatement ps = conn.prepareStatement(line);
+
+            ps.setInt(1, entryId);
+
+            ResultSet rs = ps.executeQuery();
+			rs.next();
+
 			int rowId = rs.getInt("row_id");
-			String entryId = rs.getString("entry_url");
-			String entryId = rs.getString("entry_title");
-			String entryId = rs.getString("entry_body");
-			String entryId = rs.getString("entry_notes");
+			String entryUrl = rs.getString("entry_url");
+			String entryTitle = rs.getString("entry_title");
+			String entryBody = rs.getString("entry_body");
+			String entryNotes = rs.getString("entry_notes");
 			
 			entry.setRowId(rowId);
 			entry.setEntryId(entryId);
@@ -193,19 +188,18 @@ public class Library {
 			entry.setEntryNotes(entryNotes);
 			
 		} catch (Exception e){
-			// throw new RuntimeException(e);
-			System.out.println(e);
+			throw new RuntimeException(e);
 		}	
 		
-		return new Entry();
+		return entry;
     }
 
-    public void readEntry(Entry entry){
-		System.out.println("Entry ID: " + entry.getEntryId());
+    public static void readEntry(Entry entry){
+		System.out.println("\nEntry ID: " + entry.getEntryId());
 		System.out.println("Entry title: " + entry.getEntryTitle());
 		System.out.println("Entry URL: " + entry.getEntryUrl());
-		System.out.println("Entry body:\n" + entry.getEntryBody());
-		System.out.println("Entry notes:\n" + entry.getEntryNotes());
+		System.out.println("Entry body:\n\n" + entry.getEntryBody());
+		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
 	}
 
     public void setEntry(int entry_id){}
@@ -221,7 +215,7 @@ public class Library {
             // DELETE FROM TABLE %s where entry_id = %s
     }
 
-    public static HashMap<String, String> parseCreate(String line, String[] arr, HashMap<String, String> hashMap) {
+    public static void parseCreate(String line, String[] arr, HashMap<String, String> hashMap) {
         String keyword;
 		String defaultInfileName = "links.txt";
         int i = 0, len = arr.length;
@@ -240,69 +234,41 @@ public class Library {
                     break;
             }
         }
-
-        return hashMap;
     }
 
     public static int parseRead(String line, String[] arr) {
-        return arr[1];
+        return Integer.parseInt(arr[1]);
     }
 	
 	public void testConnection(){
 		System.out.println("Testing database connection. Latest entry id: " + this.getLatestEntryId());
 	}
-	
-    public static void testFetch(){
-        String testUrl = "https://en.wikipedia.org/wiki/Main_Page";
-        String titleFileName = "fetched-title.txt";
-        String bodyFileName = "fetched-body.txt";
 
-        try (
-                BufferedWriter titleFile = new BufferedWriter(new FileWriter(titleFileName));
-                BufferedWriter bodyFile = new BufferedWriter(new FileWriter(bodyFileName))
-        ){
-            Document doc = Jsoup.connect(testUrl).get();
-            String title = doc.title();
-
-            // Page title.
-            System.out.println(title);
-            titleFile.write(title);
-
-            // Get page body.
-            Element body = doc.body();
-
-            // Formatted text, with whitespace characters.
-            String wholeBody = body.wholeText();
-            bodyFile.write(wholeBody);
-
-            System.out.println("Successfully wrote to the files.");
-        } catch (IOException e) {
-            System.out.println("Error writing files.");
-        } finally {
-            System.out.println("Ending test fetch.");
-        }
-
-    }
-
-    public static void parseAndRun(String line, String[] arr){
+    public void parseAndRun(String line, String[] arr){
         String firstWord = arr[0].toLowerCase();
 
         switch (firstWord) {
             case "create":
-                HashMap<String, String> createHashMap = Library.parseCreate(line, arr);
+                HashMap<String, String> createHashMap = new HashMap<>();
+                Library.parseCreate(line, arr, createHashMap);
 //                Library.createEntries(createHashMap);
                 break;
-            case "testfetch":
-                Utilities.testFetch(); // up to date, not Library's
+            case "q":
                 break;
             case "get":
             case "read":
+            case "r":
             case "view":
-				int readEntryId = Library.parseRead(line, arr);
-                Entry readEntry = Library.getEntry(readEntryId);
-				Library.readEntry(readEntry);
+                int readEntryId = Library.parseRead(line, arr);
+                Entry readEntry = this.getEntry(readEntryId);
+                Library.readEntry(readEntry);
                 break;
-            case "q":
+            case "testfetch":
+                Utilities.testFetch();
+                break;
+            case "latest-entry-id":
+                int id = this.getLatestEntryId();
+                System.out.println("Latest entry id: " + id);
                 break;
             default:
                 break;
