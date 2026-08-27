@@ -48,14 +48,17 @@ public class Library {
 
     public int getLatestEntryId(){
 		Connection conn = this.getConnection();
-		String line = "SELECT entry_id FROM ? ORDER BY entry_id DESC LIMIT 1";
+        String tableName = this.getTableName() + " ";
+		String line = "SELECT entry_id FROM " + tableName + "ORDER BY entry_id DESC LIMIT 1";
 		int entryId = 0;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(line);
-			ps.setString(1, this.getTableName());
+
 			ResultSet rs = ps.executeQuery();
-			entryId = rs.getInt("entry_id");
+			rs.next();
+
+            entryId = rs.getInt("entry_id");
 		} catch (Exception e){
 			 throw new RuntimeException(e);
 		}
@@ -69,56 +72,58 @@ public class Library {
     }
 
     public void createEntries(HashMap<String, String> hashMap){
-		int entryId = 0, result = 0;
-		String entryUrl = "", entryTitle = "", entryBody = "";
 		Connection conn = this.getConnection();
 		PreparedStatement ps;
 		
         // Open file.
 		String infileName = hashMap.get("infile");
 		File infile = new File(infileName);
-		
-        // Start for-loop.
-			// Compare each line to URL regex.
-			// Reject if fail and continue.
-		
-		try (Scanner fileReader = new Scanner(infile)) {
-			while (fileReader.hasNextLine()) {
-				entryUrl = fileReader.nextLine();
-				System.out.println(entryUrl);
 
-				// Document doc = Jsoup.connect(entryUrl).get();
+        System.out.println("Inserting entries.");
 
-				// // Page title.
-				// String title = doc.title();
-				// System.out.println(title);
+        try (Scanner fileReader = new Scanner(infile)) {
+            while (fileReader.hasNextLine()) {
+                String entryUrl = fileReader.nextLine();
 
-				// // Get page body.
-				// // Formatted text, with whitespace characters.
-				// Element body = doc.body();
-				// String wholeBody = body.wholeText();
-				
-				entryId = this.getLatestEntryId();
-				
-				String line = "INSERT INTO ? " +
+                // Compare each line to URL regex.
+                // Reject if fail and continue.
+
+                // Get document attributes.
+                Document doc = Jsoup.connect(entryUrl).get();
+                Element body = doc.body();
+
+                String tableName = this.getTableName() + " ";
+                int entryId = this.getLatestEntryId() + 1;
+                String entryTitle = doc.title();
+                String entryBody = body.wholeText(); // Formatted text, with whitespace characters.
+
+                String line = "INSERT INTO " + tableName +
 					"(entry_id, entry_url, entry_title, entry_body) " + 
 					"VALUES(?, ?, ?, ?)";
-				// ps = conn.prepareStatement(line);
-				// ps.setInt(1, entryId);
-				// ps.setString(2, entryUrl);
-				// ps.setString(3, entryTitle);
-				// ps.setString(4, entryBody);
+				 ps = conn.prepareStatement(line);
+				 ps.setInt(1, entryId);
+				 ps.setString(2, entryUrl);
+				 ps.setString(3, entryTitle);
+				 ps.setString(4, entryBody);
 				
-				// int result = ps.executeUpdate();
+				 int result = ps.executeUpdate();
 				
 				if (result == 0){
 					System.out.println("Could not execute INSERT to create entry for url: " + entryUrl);
 				}
+
+                else if (result == 1){
+                    System.out.println("Successful insertion for url: " + entryUrl);
+                }
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("An error occurred.");
 			e.printStackTrace();
-		}
+		} catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ArrayList<Entry> searchLibrary(String query){
@@ -202,7 +207,10 @@ public class Library {
 		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
 	}
 
-    public void setEntry(int entry_id){}
+    public void setEntry(int entry_id){
+
+
+    }
 
     public void updateEntry(int entry_id){
         setEntry(entry_id);
@@ -227,6 +235,7 @@ public class Library {
             keyword = arr[i++];
             switch (keyword) {
                 case "infile":
+                case "input-file":
                     hashMap.replace(keyword, arr[i]);
                     break;
                 default:
@@ -249,9 +258,10 @@ public class Library {
 
         switch (firstWord) {
             case "create":
+            case "c":
                 HashMap<String, String> createHashMap = new HashMap<>();
                 Library.parseCreate(line, arr, createHashMap);
-//                Library.createEntries(createHashMap);
+                this.createEntries(createHashMap);
                 break;
             case "q":
                 break;
@@ -264,9 +274,12 @@ public class Library {
                 Library.readEntry(readEntry);
                 break;
             case "testfetch":
+            case "tfetch":
                 Utilities.testFetch();
                 break;
             case "latest-entry-id":
+            case "latestid":
+            case "lid":
                 int id = this.getLatestEntryId();
                 System.out.println("Latest entry id: " + id);
                 break;
