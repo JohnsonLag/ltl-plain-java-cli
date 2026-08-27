@@ -129,7 +129,7 @@ public class Library {
     public ArrayList<Entry> searchLibrary(String query){
         // Connect to db.
 
-        // MATCH(...) AGAINST
+        // SELECT col1, ..., colN FROM table_name WHERE MATCH(entry_url, entry_title, entry_body, entry_notes) AGAINST ('search term' IN NATURAL LANGUAGE MODE);
 
         // ArrayList<Entry> search_results = new ArrayList<Entry>(10);
 
