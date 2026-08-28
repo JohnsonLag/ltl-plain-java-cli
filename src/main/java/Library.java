@@ -181,20 +181,19 @@ public class Library {
 
     public void printSearchResults(){
         ArrayList<Entry> searchResults = this.getSearchResults();
-
-        if (searchResults == null){
-            System.out.println("No search results to show.");
-            return;
-        }
-
         this.printEntries(searchResults);
     }
 
     public void printEntries(ArrayList<Entry> entries){
+        if (entries == null){
+            System.out.println("No entries to read.");
+            return;
+        }
+
         int size = entries.size();
 
         if (size <= 0){
-            System.out.println("0 entries to print.");
+            System.out.println("0 entries to read.");
             return;
         }
 
@@ -203,7 +202,6 @@ public class Library {
                     "Entry ID: " + entry.getEntryId() + "\n" +
                     "URL: "      + entry.getEntryUrl()     + "\n" +
                     "Title: "    + entry.getEntryTitle()   + "\n" +
-//                    "Content: "  + entry.getEntryBody() + "\n" +
                     "Notes: "    + entry.getEntryNotes()   + "\n\n"
             );
         }
@@ -485,10 +483,6 @@ public class Library {
                 break;
             case "r":
             case "read":
-            case "v":
-            case "view":
-            case "g":
-            case "get":
                 String readResult = Library.parseRead(line, arr);
                 if (readResult.equalsIgnoreCase("search-results")) {
                     this.printSearchResults();
@@ -503,12 +497,8 @@ public class Library {
                     this.readEntry(readEntry);
                 }
                 break;
-            case "e":
-            case "edit":
             case "u":
             case "update":
-            case "s":
-            case "set":
                 String updateResult = Library.parseRead(line, arr);
                 try {
                     int updateEntryId = Integer.parseInt(updateResult);
@@ -527,22 +517,12 @@ public class Library {
                     System.out.println("Unrecognized delete option: " + deleteResult);
                 }
                 break;
+            case "sl":
             case "search":
                 HashMap<String, String> searchHashMap = new HashMap<>();
                 this.parseSearch(line, searchHashMap);
                 this.searchLibrary(searchHashMap);
-//                System.out.println("Functionality in progress.");
                 break;
-//            case "tfetch":
-//            case "testfetch":
-//                Utilities.testFetch();
-//                break;
-//            case "lid":
-//            case "latestid":
-//            case "latest-entry-id":
-//                int id = this.getLatestEntryId();
-//                System.out.println("Latest entry id: " + id);
-//                break;
             default:
                 break;
         }

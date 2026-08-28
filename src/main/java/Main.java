@@ -19,12 +19,15 @@ public class Main {
 	}
 	
 	private static String[] simple_event_loop_dialogue = {
-            "1. quit (q)\n",
-            "2. create input-file <file_name>\n",
-            "3. read <entry_id>\n",
-            "4. update <entry_id>\n",
-            "5. delete <entry_id>\n",
-            "6. search \"<query>\"\n",
+            "1. quit\n",
+            "2. create input-file <file name>\n",
+            "3. read <entry ID | many | results>\n",
+            "4. update <entry ID>\n",
+            "5. delete <entry ID>\n",
+            "6. search \"<word or phrase to search>\"\n",
+            "\nShortcuts:\n",
+            "create: c, read: r, update: u, delete: d, search: sl/sL\n",
+            "\nInput: "
     };
 
     public static String[] getDialogue(String type){
@@ -126,7 +129,6 @@ public class Main {
                 do {
                     System.out.println();
                     Main.print_event_loop_dialogue("simple");
-                    System.out.print("\nInput: ");
                     answer = scanner.nextLine();
 
                     String[] stringArr = answer.split(" ");
