@@ -116,7 +116,6 @@ public class Library {
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println(e);
-//			System.out.println("An error occurred.");
 //			e.printStackTrace();
 		} catch (IOException e) {
             System.out.println(e);
@@ -127,19 +126,19 @@ public class Library {
         }
     }
 
-    public ArrayList<Entry> searchLibrary(String searchString){
+    public ArrayList<Entry> searchLibrary(HashMap<String, String> hashMap){
         ArrayList<Entry> searchResults = new ArrayList<Entry>(10);
         Connection conn = this.getConnection();
         Entry entry = new Entry();
         PreparedStatement ps;
 
         String tableName = this.getTableName() + " ";
-        String line = "SELECT entry_id, entry_url, entry_title, entry_body, entry_notes FROM " + tableName + "WHERE MATCH(entry_url, entry_title, entry_body, entry_notes) AGAINST (?) IN NATURAL LANGUAGE MODE)";
+        String line = "SELECT entry_id, entry_url, entry_title, entry_body, entry_notes FROM " + tableName + "WHERE MATCH(entry_url, entry_title, entry_body, entry_notes) AGAINST (? IN NATURAL LANGUAGE MODE)";
 
         System.out.println("Retrieving results.");
         try {
             ps = conn.prepareStatement(line);
-            ps.setString(1, searchString);
+            ps.setString(1, hashMap.get("searchString"));
 
             ps.execute();
             ResultSet rs = ps.getResultSet();
@@ -151,16 +150,11 @@ public class Library {
                 String entryBody = rs.getString("entry_body");
                 String entryNotes = rs.getString("entry_notes");
 
-                entry.setEntryId(entryId);
-                entry.setEntryUrl(entryUrl);
-                entry.setEntryTitle(entryTitle);
-                entry.setEntryBody(entryBody);
-                entry.setEntryNotes(entryNotes);
-
-                searchResults.add(entry);
+                searchResults.add(new Entry(entryId, entryUrl, entryTitle, entryBody, entryNotes));
             }
 
-            System.out.println(searchResults.size() + " result(s) found.");
+            System.out.println(searchResults.size() + " search result(s) found. Type and enter \"read results\" to view search result(s).");
+            this.setSearchResults(searchResults);
         } catch (SQLException e) {
             System.out.println(e);
 //            throw new RuntimeException(e);
@@ -187,6 +181,12 @@ public class Library {
 
     public void printSearchResults(){
         ArrayList<Entry> searchResults = this.getSearchResults();
+
+        if (searchResults == null){
+            System.out.println("No search results to show.");
+            return;
+        }
+
         this.printEntries(searchResults);
     }
 
@@ -370,7 +370,8 @@ public class Library {
                     return;
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                System.out.println(e);
+//                throw new RuntimeException(e);
             }
 
         } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
@@ -464,6 +465,12 @@ public class Library {
 		System.out.println("Testing database connection. Latest entry id: " + this.getLatestEntryId());
 	}
 
+    public void parseSearch(String line, HashMap<String, String> hashMap){
+        String[] arr = line.split("\"");
+        hashMap.put("searchString", arr[1]);
+        return;
+    }
+
     public void parseAndRun(String line, String[] arr){
         String firstWord = arr[0].toLowerCase();
 
@@ -496,6 +503,8 @@ public class Library {
                     this.readEntry(readEntry);
                 }
                 break;
+            case "e":
+            case "edit":
             case "u":
             case "update":
             case "s":
@@ -519,7 +528,10 @@ public class Library {
                 }
                 break;
             case "search":
-                System.out.println("Functionality in progress.");
+                HashMap<String, String> searchHashMap = new HashMap<>();
+                this.parseSearch(line, searchHashMap);
+                this.searchLibrary(searchHashMap);
+//                System.out.println("Functionality in progress.");
                 break;
 //            case "tfetch":
 //            case "testfetch":

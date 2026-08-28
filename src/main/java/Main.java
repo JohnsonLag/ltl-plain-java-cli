@@ -24,7 +24,7 @@ public class Main {
             "3. read <entry_id>\n",
             "4. update <entry_id>\n",
             "5. delete <entry_id>\n",
-            "6. search query \"<query>\" [output-to [file_name]] \n",
+            "6. search \"<query>\"\n",
     };
 
     public static String[] getDialogue(String type){
