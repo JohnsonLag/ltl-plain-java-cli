@@ -232,16 +232,10 @@ public class Library {
                 String entryBody = rs.getString("entry_body");
                 String entryNotes = rs.getString("entry_notes");
 
-                entry.setEntryId(entryId);
-                entry.setEntryUrl(entryUrl);
-                entry.setEntryTitle(entryTitle);
-                entry.setEntryBody(entryBody);
-                entry.setEntryNotes(entryNotes);
-
-                manyResults.add(entry);
+                manyResults.add(new Entry(entryId, entryUrl, entryTitle, entryBody, entryNotes));
             }
 
-            System.out.println(manyResults.size() + " result(s) found.");
+            System.out.println(manyResults.size() + " result(s) found.\n");
         } catch (SQLException e) {
             System.out.println(e);
 //            throw new RuntimeException(e);
@@ -256,18 +250,30 @@ public class Library {
     }
 
     public void readEntry(Entry entry){
-		System.out.println("\nEntry ID: " + entry.getEntryId());
-		System.out.println("Entry title: " + entry.getEntryTitle());
-		System.out.println("Entry URL: " + entry.getEntryUrl());
-		System.out.println("Entry body:\n\n" + entry.getEntryBody());
-		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
+		if (entry.getEntryId() == -1){
+            System.out.println("Entry not found.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("Entry ID: " + entry.getEntryId());
+        System.out.println("Entry URL: " + entry.getEntryUrl());
+        System.out.println("Entry title: " + entry.getEntryTitle());
+		System.out.println("Entry body:\n" + entry.getEntryBody());
+		System.out.println("Entry notes:\n" + entry.getEntryNotes());
 	}
 
     public void readEntryMinusBody(Entry entry){
-		System.out.println("\nEntry ID: " + entry.getEntryId());
-		System.out.println("Entry title: " + entry.getEntryTitle());
-		System.out.println("Entry URL: " + entry.getEntryUrl());
-		System.out.println("\nEntry notes:\n\n" + entry.getEntryNotes());
+        if (entry.getEntryId() == -1){
+            System.out.println("Entry not found.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("Entry ID: " + entry.getEntryId());
+        System.out.println("Entry URL: " + entry.getEntryUrl());
+        System.out.println("Entry title: " + entry.getEntryTitle());
+		System.out.println("Entry notes:\n" + entry.getEntryNotes());
 	}
 
     public Entry getEntry(int entryId){
@@ -316,26 +322,29 @@ public class Library {
         PreparedStatement ps = null;
         Connection conn = this.getConnection();
 
-        System.out.println("Current entry:\n");
+        System.out.println("Current entry:");
         this.readEntryMinusBody(entry);
 
+        System.out.println();
         System.out.println("Editable fields: URL, title, notes.\n");
 
-        System.out.println("Updated entry URL: " + entry.getEntryUrl());
+        System.out.print("Updated entry URL: ");
         String entryUrl = scanner.nextLine();
 
-        System.out.println("Updated entry title: " + entry.getEntryTitle());
+        System.out.print("Updated entry title: ");
         String entryTitle = scanner.nextLine();
 
-        System.out.println("Updated entry notes:\n" + entry.getEntryNotes());
+        System.out.print("Updated entry notes:\n");
         String entryNotes = scanner.nextLine();
 
-        System.out.println("After modifications:\n");
+        System.out.println();
+        System.out.println("After modifications:");
         System.out.println("Entry URL: " + entryUrl);
         System.out.println("Entry title: " + entryTitle);
         System.out.println("Entry notes:\n" + entryNotes);
 
         do {
+            System.out.println();
             System.out.println("Save changes? Y/y for yes, N/n for no: ");
             answer = scanner.nextLine();
 
@@ -364,7 +373,7 @@ public class Library {
                 throw new RuntimeException(e);
             }
 
-        } while (!answer.equalsIgnoreCase("y") || !answer.equalsIgnoreCase("n"));
+        } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
 
     }
 
@@ -401,10 +410,11 @@ public class Library {
                     return;
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                System.out.println(e);
+//                throw new RuntimeException(e);
             }
 
-        } while (!answer.equalsIgnoreCase("y") || !answer.equalsIgnoreCase("n"));
+        } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
 
         scanner.close();
     }
@@ -442,8 +452,11 @@ public class Library {
                     value.equalsIgnoreCase("search-results")
             ){
                 return "search-results";
+            } else if (value.equalsIgnoreCase("many")){
+                return "many";
+            } else {
+                return "unrecognized";
             }
-            return "unrecognized";
         }
     }
 
@@ -465,7 +478,9 @@ public class Library {
                 break;
             case "r":
             case "read":
+            case "v":
             case "view":
+            case "g":
             case "get":
                 String readResult = Library.parseRead(line, arr);
                 if (readResult.equalsIgnoreCase("search-results")) {
@@ -502,6 +517,9 @@ public class Library {
                 } catch (NumberFormatException e) {
                     System.out.println("Unrecognized delete option: " + deleteResult);
                 }
+                break;
+            case "search":
+                System.out.println("Functionality in progress.");
                 break;
 //            case "tfetch":
 //            case "testfetch":
