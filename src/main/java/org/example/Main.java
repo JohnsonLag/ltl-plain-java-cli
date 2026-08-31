@@ -1,5 +1,5 @@
-import java.util.ArrayList;
-import java.util.HashMap;
+package org.example;
+
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -118,7 +118,7 @@ public class Main {
             Main.printExitMessage();
             return;
         } catch (FileNotFoundException e) {
-            System.out.println("File not found.");
+            System.out.println("env file not found.");
             Main.printExitMessage();
             throw new RuntimeException(e);
         }

@@ -1,3 +1,5 @@
+package org.example;
+
 public class Entry {
     private int rowId;
     private int entryId;
