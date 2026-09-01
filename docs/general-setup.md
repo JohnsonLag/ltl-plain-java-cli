@@ -59,7 +59,7 @@
 
 * If you won't be using Option 1 below, then simply rename `.env-template.txt` to `.env`. Otherwise, run the `rename-files.bat` file.
 
-* Set up your local `ltl` MySQL database by following the instructions in the `db` folder of the `ltl` repository.
+* Set up your local `ltl` MySQL database by following the [instructions in the `db` folder](../db/ltl-database-setup-guide.md) of the `ltl` repository.
 
   - Add the ltl_user credentials for the database (or the credentials for the non-root user you created) to your `.env` file. 
 

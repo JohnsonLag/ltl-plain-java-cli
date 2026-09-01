@@ -1,4 +1,8 @@
-## One-time setup.
+## `ltl` database setup guide.
+
+Complete these steps after installing MySQL and creating the root/administrative account. This guide will allow you to create the `ltl` database and a user specifically for it.
+
+### One-time setup.
 
 Open the `create-ltl-user.sql` file.
 
@@ -22,7 +26,7 @@ In the interactive prompt, run each of the following statements, in this order:
 
 After running, change the password in the `create-ltl-user.sql` file back to `REPLACE_THIS_WITH_A_PASSWORD_THAT_YOU_CREATE`. The password should stay in the `.env` file, and the `.env` file should not be committed to version control.
 
-## Regular use.
+### Regular use.
 
 To log into the `ltl` database on the command line, you can run:
 
