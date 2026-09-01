@@ -1,1 +1,3 @@
 .env
+ltl-compile.bat
+ltl-run.bat

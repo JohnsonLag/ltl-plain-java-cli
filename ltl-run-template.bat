@@ -1,0 +1,1 @@
+C:\path\to\java.exe –classpath C:\Users\you\tools\ltl-plain-java-cli\target\classes;C:\Users\you\.m2\repository\org\jsoup\jsoup\1.23.1\jsoup-1.23.1.jar;C:\Users\you\.m2\repository\com\mysql\mysql-connector-j\26.7.0\mysql-connector-j-26.7.0.jar;C:\Users\you\.m2\repository\com\google\protobuf\protobuf-java\4.31.1\protobuf-java-4.31.1.jar org.example.Main
