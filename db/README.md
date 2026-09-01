@@ -1,6 +1,6 @@
 ## One-time setup.
 
-Open the the `create-ltl-user.sql` file.
+Open the `create-ltl-user.sql` file.
 
 Go to this line:
 

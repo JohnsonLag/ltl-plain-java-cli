@@ -57,9 +57,13 @@
 
 * Download the `ltl` repository as a `.zip` file from GitHub and unzip it in a directory of your choosing.
 
+* If you won't be using Option 1 below, then simply rename `.env-template.txt` to `.env`. Otherwise, run the `rename-files.bat` file.
+
 * Set up your local `ltl` MySQL database by following the instructions in the `db` folder of the `ltl` repository.
 
-  * Select which option below that you prefer to run `ltl`.
+  - Add the ltl_user credentials for the database (or the credentials for the non-root user you created) to your `.env` file. 
+
+* Select which option below that you prefer to run `ltl`.
 
 ### Ways to run `ltl`
 
