@@ -51,6 +51,10 @@
 
 * Downloads page: https://www.jetbrains.com/idea/download/
 
+#### Optional: `git` or GitHub Desktop
+
+* If you want to clone the repository and be able to pull the latest changes, rather than download a `.zip` copy.
+
 ### General setup steps
 
 * Install and configure the core dependencies above.
