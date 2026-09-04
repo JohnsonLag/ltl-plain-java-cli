@@ -20,8 +20,8 @@ public class Main {
 	
 	private static String[] simple_event_loop_dialogue = {
             "1. quit\n",
-            "2. create input-file <file name>\n",
-            "3. read <entry ID | many | results>\n",
+            "2. create --input-file <file name>\n",
+            "3. read <entry ID | --many | --results>\n",
             "4. update <entry ID>\n",
             "5. delete <entry ID>\n",
             "6. search \"<word or phrase to search>\"\n",
@@ -118,7 +118,8 @@ public class Main {
             Main.printExitMessage();
             return;
         } catch (FileNotFoundException e) {
-            System.out.println("env file not found.");
+            String workingDirectory = System.getProperty("user.dir");
+            System.out.println(".env file not found in current working directory: " + workingDirectory);
             Main.printExitMessage();
             throw new RuntimeException(e);
         }

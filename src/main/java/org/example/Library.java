@@ -426,13 +426,13 @@ public class Library {
         int i = 0, len = arr.length;
 
         hashMap.put("keyword", "create");
-        hashMap.put("infile", defaultInfileName);
+        hashMap.put("--infile", defaultInfileName);
 
         for (i = 1; i < len; i++) {
             keyword = arr[i++];
             switch (keyword) {
-                case "infile":
-                case "input-file":
+                case "--infile":
+                case "--input-file":
                     hashMap.replace(keyword, arr[i]);
                     break;
                 default:
@@ -448,13 +448,13 @@ public class Library {
             int resultId = Integer.parseInt(value);
             return resultId + "";
         } catch (Exception e) {
-            if (value.equalsIgnoreCase("search") ||
-                    value.equalsIgnoreCase("results") ||
-                    value.equalsIgnoreCase("search-results")
+            if (value.equalsIgnoreCase("--search") ||
+                    value.equalsIgnoreCase("--results") ||
+                    value.equalsIgnoreCase("--search-results")
             ){
-                return "search-results";
-            } else if (value.equalsIgnoreCase("many")){
-                return "many";
+                return "--search-results";
+            } else if (value.equalsIgnoreCase("--many")){
+                return "--many";
             } else {
                 return "unrecognized";
             }
@@ -476,6 +476,7 @@ public class Library {
 
         switch (firstWord) {
             case "q":
+            case "quit":
                 break;
             case "c":
             case "create":
@@ -486,11 +487,11 @@ public class Library {
             case "r":
             case "read":
                 String readResult = Library.parseRead(line, arr);
-                if (readResult.equalsIgnoreCase("search-results")) {
+                if (readResult.equalsIgnoreCase("--search-results")) {
                     this.printSearchResults();
                 } else if (readResult.equalsIgnoreCase("unrecognized")) {
                     System.out.println("Unrecognized read option: " + arr[1]);
-                } else if (readResult.equalsIgnoreCase("many")) {
+                } else if (readResult.equalsIgnoreCase("--many")) {
                     ArrayList<Entry> manyEntries = this.queryManyEntries();
                     this.printEntries(manyEntries);
                 } else {
