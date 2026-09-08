@@ -155,7 +155,7 @@ public class Library {
                 searchResults.add(new Entry(entryId, entryUrl, entryTitle, entryBody, entryNotes));
             }
 
-            System.out.println(searchResults.size() + " search result(s) found. Type and enter \"read results\" to view search result(s).");
+            System.out.println(searchResults.size() + " search result(s) found. Type and enter \"read --results\" to view search result(s).");
             this.setSearchResults(searchResults);
         } catch (SQLException e) {
             System.out.println(e);

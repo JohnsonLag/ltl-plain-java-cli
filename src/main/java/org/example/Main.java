@@ -25,8 +25,8 @@ public class Main {
             "4. update <entry ID>\n",
             "5. delete <entry ID>\n",
             "6. search \"<word or phrase to search>\"\n",
-            "\nShortcuts:\n",
-            "create: c, read: r, update: u, delete: d, search: sl/sL\n",
+            "\nExamples: read --many, update 1, search \"Main\"\n",
+            "\nShortcuts: quit: q, create: c, read: r, update: u, delete: d, search: sl/sL\n",
             "\nInput: "
     };
 
