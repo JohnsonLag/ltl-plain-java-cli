@@ -59,7 +59,7 @@
 
 * Install and configure the core dependencies above.
 
-* Download the `ltl` repository as a `.zip` file from GitHub and unzip it in a directory of your choosing.
+* Download the `ltl` repository to your computer by cloning it or downloading it as a `.zip` file from GitHub. If using a zip file, unzip it in a directory of your choosing.
 
 * If you won't be using Option 1 below, then simply rename `.env-template.txt` to `.env`. Otherwise, run the `rename-files.bat` file.
 
@@ -77,29 +77,17 @@ More manual, but a minimal setup.
 
 **One-time setup:**
 
-Windows: fill in the provided batch files (`.bat`).
+Windows: edit the provided batch files (`.bat`).
 
 Linux, macOS: create and use shell scripts (`.sh`).
 
-Fill in the `ltl-compile.bat` file.
+Edit the `ltl-compile.bat` file so it uses the actual path to `mvn` on your system. Then, run the file. (It will install `jsoup`, `mysql-connector-j`, and `protobuf-java` onto your system.)
 
-```
-C:\path\to\mvn clean compile
-```
-
-Run the `ltl-compile.bat` file.
-
-Next, fill in the `ltl-run.bat` file with the proper paths on your system. Fill in the correct paths to `java` and the `ltl` folder, and change the `you` in the paths to your username on your computer.
-
-For example, if you downloaded and unzipped this repository to a folder called `tools`, your file would look like this.
-
-```
-C:\path\to\java.exe –classpath C:\Users\you\tools\ltl-plain-java-cli\target\classes;C:\Users\you\.m2\repository\org\jsoup\jsoup\1.23.1\jsoup-1.23.1.jar;C:\Users\you\.m2\repository\com\mysql\mysql-connector-j\26.7.0\mysql-connector-j-26.7.0.jar;C:\Users\you\.m2\repository\com\google\protobuf\protobuf-java\4.31.1\protobuf-java-4.31.1.jar org.example.Main
-```
+Next, edit the `ltl-run.bat` file so it uses the actual paths on your system to `java.exe` and the `ltl-plain-java-cli` folder. Make sure that any occurences of `you` in any of the file paths are replaced with your actual username.
 
 **Regular use:**
 
-On the command line, in the project root directory, run `ltl.bat`.
+On the command line, in the project root directory, run `ltl-run.bat`.
 
 #### Option 2: using IntelliJ IDEA.
 
