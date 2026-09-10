@@ -151,12 +151,39 @@ public class Library {
 		}
 	}
 	
+	public void createEntriesBlank(int numberOfEntries){
+		if (numberOfEntries() >= 1 && numberOfEntries() <= this.getAutoNumberOfEntriesMax()){
+			try {
+				for (int i = 0; i < this.getAutoNumberOfEntriesMax(); i++){
+					String tableName = this.getTableName() + " ";
+					int entryId = this.getLatestEntryId() + 1;
+					String line = "INSERT INTO " + tableName + "(entry_id) VALUES(?)";
+					
+					Connection conn = this.getConnection();
+					PreparedStatement ps = conn.prepareStatement(line);
+					
+					ps.setInt(1, entryId);
+
+					int result = ps.executeUpdate();
+
+					if (result == 0){
+						System.out.println("Could not execute CREATE for entry.");
+					} else if (result == 1){
+						System.out.println("Successful creation for entry " + entryId + ".");
+					}
+				}
+			} catch (SQLException e) {
+				System.out.println(e);
+			}
+		}
+	}
+	
     public void createEntries(HashMap<String, String> hashMap){
 		Connection conn = this.getConnection();
 		PreparedStatement ps;
 		
         // Open file.
-		String infileName = hashMap.get("infile");
+		String infileName = hashMap.get("--input-file");
 		File infile = new File(infileName);
 
         System.out.println("Inserting entries.");
@@ -202,6 +229,110 @@ public class Library {
         } catch (SQLException e) {
             System.out.println(e);
         }
+		
+		/*
+		
+		String inputFileName = hashMap.get("--input-file");
+		System.out.println("Inserting entries.");
+		
+		// No files to open.
+		if (hashMap.get(--blank) != null && hashMap.get(--blank).equalsIgnoreCase("true") &&
+			hashMap.get(--auto) != null && hashMap.get(--auto).equalsIgnoreCase("true") &&
+			this.getAutoNumberOfEntries() >= 1 && this.getAutoNumberOfEntries() <= this.getAutoNumberOfEntriesMax()){
+			createEntriesBlank(this.getAutoNumberOfEntries()).
+		}
+		
+		// Open file containing urls.
+		boolean useUrls = false, useLocalPaths = false, noGrab = false;
+		
+		if (hashMap.get("--urls") != null && hashMap.get("--urls").equalsIgnoreCase("true")){
+			useUrls = true;
+		} else if (hashMap.get("--local-paths") != null && hashMap.get("--local-paths").equalsIgnoreCase("true")){
+			useLocalPaths = true;
+		}
+		
+		if (hashMap.get("--no-grab") != null && hashMap.get("--no-grab").equalsIgnoreCase("true")){
+			noGrab = true;
+		} else {
+			noGrab = false;
+		}
+		
+		if (inputFileName != null){
+			// Open file.
+			File inputFile = new File(inputFileName);
+			// Grab text from the URIs.
+				try (Scanner fileReader = new Scanner(inputFile)) {
+					
+					// Grab text from the remote URLs.
+					if (useUrls == 1){
+						while (fileReader.hasNextLine()) {
+							String entryUrl = fileReader.nextLine();
+
+							int entryId = this.getLatestEntryId() + 1;
+
+							// Compare each line to URL regex.
+							// Reject if fail and continue.
+
+							// Get document attributes.
+							
+							if (useUrls == true && noGrab == false){
+								Document doc = Jsoup.connect(entryUrl).get();
+								String entryTitle = doc.title();
+								Element body = doc.body();
+								String entryBody = body.wholeText(); // Formatted text, with whitespace characters.
+								
+							} else if (useLocalPaths == true && noGrab == false){
+								// Get info. from local files.
+								// ...
+								
+							}
+
+
+							String tableName = this.getTableName() + " ";
+							String line = "";
+							
+							if (noGrab == true){
+								line = "INSERT INTO " + tableName + "(entry_id, entry_url) " + "VALUES(?,?)";
+							} else if (noGrab == false){
+								line = "INSERT INTO " + tableName + "(entry_id, entry_url, entry_title, entry_body) " + "VALUES(?,?,?,?)";
+							}
+							
+								Connection conn = this.getConnection();
+							 PreparedStatement ps = conn.prepareStatement(line);
+							 ps.setInt(1, entryId);
+							 ps.setString(2, entryUrl);
+							 
+							 if (noGrab == false){
+								ps.setString(3, entryTitle);
+								ps.setString(4, entryBody);
+							 }
+							 
+							 int result = ps.executeUpdate();
+							
+							if (result == 0){
+								System.out.println("Could not execute INSERT to create entry for URI: " + entryUrl);
+							} else if (result == 1){
+								System.out.println("Successful insertion for URI: " + entryUrl);
+							}
+						}
+						
+					}
+				} catch (FileNotFoundException e) {
+					System.out.println(e);
+				} catch (IOException e) {
+					System.out.println(e);
+				} catch (SQLException e) {
+					System.out.println(e);
+				}
+				
+			
+		}
+		
+		else {
+			System.out.println("Null input file name. Exiting entry creation.");
+		}
+		
+		*/
     }
 
     public ArrayList<Entry> searchLibrary(HashMap<String, String> hashMap){
