@@ -2,6 +2,8 @@ package org.example;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -61,17 +63,93 @@ public class Library {
             entryId = rs.getInt("entry_id");
 		} catch (Exception e){
 			 System.out.println(e);
-//			 throw new RuntimeException(e);
 		}
 		
 		return entryId;
-		
 	}
 
     public static Entry getUrlResponse(Entry entry){
         return new Entry();
     }
 
+    public void createEntry(){
+        Scanner scanner = new Scanner(System.in);
+        String answer = "";
+        String entryUrl, entryTitle, entryBody, entryNotes;
+
+        System.out.println("Editable fields: URL, title, body, notes.\n");
+
+        System.out.print("Created entry URL: ");
+        entryUrl = scanner.nextLine();
+
+        System.out.print("Created entry title: ");
+        entryTitle = scanner.nextLine();
+        
+		System.out.print("Created entry body:\n");
+        entryBody = scanner.nextLine();
+
+        System.out.print("Created entry notes:\n");
+        entryNotes = scanner.nextLine();
+
+		do {
+			System.out.println();
+            System.out.println("Show entry to be created? Y/y for yes, N/n for no: ");
+			
+			if (answer.equalsIgnoreCase("y")){
+				System.out.println("After creation:");
+				System.out.println("Entry URL: " + entryUrl);
+				System.out.println("Entry title: " + entryTitle);
+				System.out.println("Entry body: " + entryBody);
+				System.out.println("Entry notes:\n" + entryNotes);
+				System.out.println();
+			}
+		} while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
+
+        do {
+            System.out.println("Create entry? Y/y for yes, N/n for no: ");
+            answer = scanner.nextLine();
+
+			if (answer.equalsIgnoreCase("y")){
+				Entry entry = new Entry(entryUrl, entryTitle, entryBody, entryNotes);
+				createEntry(entry);
+			} else if (answer.equalsIgnoreCase("n")){
+                    System.out.println("Entry will not be created.");
+                    return;
+			}
+        } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
+	}
+
+    public void createEntry(Entry entry){
+		PreparedStatement ps = null;
+        Connection conn = this.getConnection();
+		
+		if (entry != null){
+			try {
+				String tableName = this.getTableName() + " ";
+				int entryId = this.getLatestEntryId() + 1;
+				String line = "INSERT INTO " + tableName + "(entry_id, entry_url, entry_title, entry_body, entry_notes) VALUES(?,?,?,?,?)";
+				ps = conn.prepareStatement(line);
+				ps.setInt(1, entryId);
+				ps.setString(2, entryUrl);
+				ps.setString(3, entryTitle);
+				ps.setString(4, entryBody);
+				ps.setString(5, entryNotes);
+
+				int result = ps.executeUpdate();
+
+				if (result == 0){
+					System.out.println("Could not execute CREATE for entry.");
+				} else if (result == 1){
+					System.out.println("Successful creation for entry " + entryId + ".");
+				}
+			} catch (SQLException e) {
+				System.out.println(e);
+			}
+		} else {
+			System.out.println("Null entry object received. Could not create entry.");
+		}
+	}
+	
     public void createEntries(HashMap<String, String> hashMap){
 		Connection conn = this.getConnection();
 		PreparedStatement ps;
@@ -118,13 +196,10 @@ public class Library {
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println(e);
-//			e.printStackTrace();
 		} catch (IOException e) {
             System.out.println(e);
-//            throw new RuntimeException(e);
         } catch (SQLException e) {
             System.out.println(e);
-//            throw new RuntimeException(e);
         }
     }
 
@@ -159,7 +234,6 @@ public class Library {
             this.setSearchResults(searchResults);
         } catch (SQLException e) {
             System.out.println(e);
-//            throw new RuntimeException(e);
         }
 
          return searchResults;
@@ -238,7 +312,6 @@ public class Library {
             System.out.println(manyResults.size() + " result(s) found.\n");
         } catch (SQLException e) {
             System.out.println(e);
-//            throw new RuntimeException(e);
         }
 
         this.setManyEntries(manyResults);
@@ -254,7 +327,7 @@ public class Library {
             System.out.println("Entry not found.");
             return;
         }
-
+        
         System.out.println();
         System.out.println("Entry ID: " + entry.getEntryId());
         System.out.println("Entry URL: " + entry.getEntryUrl());
@@ -308,7 +381,6 @@ public class Library {
 
         } catch (Exception e){
             System.out.println(e);
-//            throw new RuntimeException(e);
         }
 
         return entry;
@@ -371,9 +443,7 @@ public class Library {
                 }
             } catch (SQLException e) {
                 System.out.println(e);
-//                throw new RuntimeException(e);
             }
-
         } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
 
     }
@@ -412,9 +482,7 @@ public class Library {
                 }
             } catch (SQLException e) {
                 System.out.println(e);
-//                throw new RuntimeException(e);
             }
-
         } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
 
         scanner.close();
@@ -442,23 +510,76 @@ public class Library {
         }
     }
 
-    public static String parseRead(String line, String[] arr) {
-        String value = arr[1];
-        try {
-            int resultId = Integer.parseInt(value);
-            return resultId + "";
-        } catch (Exception e) {
-            if (value.equalsIgnoreCase("--search") ||
-                    value.equalsIgnoreCase("--results") ||
-                    value.equalsIgnoreCase("--search-results")
-            ){
-                return "--search-results";
-            } else if (value.equalsIgnoreCase("--many")){
-                return "--many";
-            } else {
-                return "unrecognized";
+    public static HashMap<String, String> parseRead(String line, String[] arr, HashMap<String, String> hashMap) {
+        // String value = arr[1];
+        arr = line.split(" --");
+
+        // for (String elem : arr)
+        //     System.out.print(elem + ", ");
+        // System.out.println();
+        
+        hashMap.put("command", arr[0]);
+        
+        for (String elem : arr){
+            String[] subelem = elem.split(" ");
+            
+            // for (String subsubelem : subelem)
+            //     System.out.print(subsubelem + ", ");
+            // System.out.println();
+
+            if (subelem[0] != null){
+                switch (subelem[0]){
+                    case "infile":
+					case "input-file":
+                        if (subelem[1] != null){
+							hashMap.put("--input-file", subelem[1]);
+						}
+						break;
+					case "output-file":
+                        if (subelem[1] != null){
+                            hashMap.put("--output-file", subelem[1]);
+                        }
+                        break;
+                    case "blank":
+                        hashMap.put("--blank", "true");
+                        break;
+                    case "many":
+                        hashMap.put("--many", "true");
+                    case "search":
+                    case "results":
+                    case "search-results":
+                        if (subelem[1] != null){
+                            hashMap.put("--search-results", "true");
+                        }
+                        break;
+                        break;
+                    default:
+                        hashMap.put("unrecognized", subelem[0]);
+                        break;
+                }
             }
         }
+
+        int len = arr.length;
+
+        if (len > 0){
+            String[] first = arr[0].split(" ");
+            if (first.length > 1){
+                hashMap.put("--entry-id", first[1]);
+            } else {
+                String[] last = arr[len-1].split(" ");
+                if (last.length > 1){
+                    hashMap.put("--entry-id", last[1]);
+                }
+            }
+        }
+
+        // Set<Map.Entry<String,String>> set = hashMap.entrySet();
+        // for (Map.Entry<String,String> map : set)
+        //     System.out.print(map + ", ");
+        // System.out.println();
+
+        return hashMap;
     }
 
 	public void testConnection(){
@@ -478,55 +599,77 @@ public class Library {
             case "q":
             case "quit":
                 break;
+
             case "c":
             case "create":
                 HashMap<String, String> createHashMap = new HashMap<>();
-                this.parseCreate(line, arr, createHashMap);
-                this.createEntries(createHashMap);
-                break;
+                createHashMap = Library.parseRead(line, arr, createHashMap);
+
+				if (createHashMap.get("--blank") != null  && createHashMap.get("--blank").equalsIgnoreCase("true")){
+					this.createEntry();
+				} else {
+					this.createEntries(createHashMap);
+				}
+
+				break;
+
             case "r":
             case "read":
-                String readResult = Library.parseRead(line, arr);
-                if (readResult.equalsIgnoreCase("--search-results")) {
+                HashMap<String, String> readHashMap = new HashMap<>();    
+                readHashMap = Library.parseRead(line, arr, readHashMap);
+                if (readHashMap.get("--entry-id") != null){
+                    try {
+                        int readEntryId = Integer.parseInt(readHashMap.get("--entry-id"));
+                        Entry readEntry = this.getEntry(readEntryId);
+                        this.readEntry(readEntry);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Unrecognized read option: " + readHashMap.get("--entry-id"));
+                    }
+                } else if (readHashMap.get("--search-results") != null && readHashMap.get("--search-results").equalsIgnoreCase("true")) {
                     this.printSearchResults();
-                } else if (readResult.equalsIgnoreCase("unrecognized")) {
-                    System.out.println("Unrecognized read option: " + arr[1]);
-                } else if (readResult.equalsIgnoreCase("--many")) {
+                } else if (readHashMap.get("--many") != null && readHashMap.get("--many").equalsIgnoreCase("true")) {
                     ArrayList<Entry> manyEntries = this.queryManyEntries();
                     this.printEntries(manyEntries);
                 } else {
-                    int readEntryId = Integer.parseInt(readResult);
-                    Entry readEntry = this.getEntry(readEntryId);
-                    this.readEntry(readEntry);
+                    System.out.println("Could not execute read operation.");
                 }
                 break;
-            case "u":
-            case "update":
-                String updateResult = Library.parseRead(line, arr);
-                try {
-                    int updateEntryId = Integer.parseInt(updateResult);
-                    this.updateEntry(updateEntryId);
-                } catch (NumberFormatException e) {
-                    System.out.println("Unrecognized update option: " + updateResult);
-                }
-                break;
-            case "d":
-            case "delete":
-                String deleteResult = Library.parseRead(line, arr);
-                try {
-                    int deleteEntryId = Integer.parseInt(deleteResult);
-                    this.deleteEntry(deleteEntryId);
-                } catch (NumberFormatException e) {
-                    System.out.println("Unrecognized delete option: " + deleteResult);
-                }
-                break;
+                
+			case "u":
+			case "update":
+				HashMap<String, String> updateHashMap = new HashMap<>();    
+				updateHashMap = Library.parseRead(line, arr, updateHashMap);
+				try {
+					int updateEntryId = Integer.parseInt(updateHashMap.get("--entry-id"));
+					this.updateEntry(updateEntryId);
+				} catch (NumberFormatException e) {
+					System.out.println("Could not execute update operation.");
+					// System.out.println("Unrecognized update option: " + updateHashMap.get("unrecognized"));
+				}
+				break;
+			
+			case "d":
+			case "delete":
+				HashMap<String, String> deleteHashMap = new HashMap<>();    
+				deleteHashMap = Library.parseRead(line, arr, deleteHashMap);
+				try {
+					int deleteEntryId = Integer.parseInt(deleteHashMap.get("--entry-id"));
+					this.deleteEntry(deleteEntryId);
+				} catch (NumberFormatException e) {
+					System.out.println("Could not execute delete operation.");
+					// System.out.println("Unrecognized delete option: " + deleteHashMap.get("unrecognized"));
+			}
+
+			break;
+
             case "sl":
             case "search":
                 HashMap<String, String> searchHashMap = new HashMap<>();
                 this.parseSearch(line, searchHashMap);
                 this.searchLibrary(searchHashMap);
                 break;
-            default:
+            
+			default:
                 break;
         }
     }

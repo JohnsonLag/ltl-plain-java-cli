@@ -19,6 +19,7 @@ public class Main {
 	}
 	
 	private static String[] simple_event_loop_dialogue = {
+            "===========================================\n",
             "1. quit\n",
             "2. create --input-file <file name>\n",
             "3. read <entry ID | --many | --results>\n",
