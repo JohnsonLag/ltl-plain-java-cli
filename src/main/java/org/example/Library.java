@@ -2,8 +2,9 @@ package org.example;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
+
+import java.util.Set; // Debugging purposes
+import java.util.Map; // Debugging purposes
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -336,6 +337,33 @@ public class Library {
 		System.out.println("Entry notes:\n" + entry.getEntryNotes());
 	}
 
+    public void readEntry(Entry entry, HashMap<String,String> hashMap){
+		if (entry.getEntryId() == -1){
+            System.out.println("Entry not found.");
+            return;
+        }
+        
+		if (hashMap != null && hashMap.get("--output-file") != null){
+			String outputFileName = hashMap.get("--output-file");
+			
+			try (
+                BufferedWriter outputFile = new BufferedWriter(new FileWriter(outputFileName));
+			){
+				outputFile.write("Entry ID: " + entry.getEntryId());
+				outputFile.write("Entry URL: " + entry.getEntryUrl());
+				outputFile.write("Entry title: " + entry.getEntryTitle());
+				outputFile.write("Entry body:\n" + entry.getEntryBody());
+				outputFile.write("Entry notes:\n" + entry.getEntryNotes());
+
+				System.out.println("Successfully wrote to the files.");
+			} catch (IOException e) {
+				System.out.println("Error writing entry to output file.");
+			}
+		} else {
+			System.out.println("No output file name detected, entry was not written to any file.");
+		}
+	}
+
     public void readEntryMinusBody(Entry entry){
         if (entry.getEntryId() == -1){
             System.out.println("Entry not found.");
@@ -617,14 +645,19 @@ public class Library {
             case "read":
                 HashMap<String, String> readHashMap = new HashMap<>();    
                 readHashMap = Library.parseRead(line, arr, readHashMap);
-                if (readHashMap.get("--entry-id") != null){
-                    try {
-                        int readEntryId = Integer.parseInt(readHashMap.get("--entry-id"));
-                        Entry readEntry = this.getEntry(readEntryId);
-                        this.readEntry(readEntry);
-                    } catch (NumberFormatException e) {
-                        System.out.println("Unrecognized read option: " + readHashMap.get("--entry-id"));
-                    }
+                
+				if (readHashMap.get("--entry-id") != null){
+                    if (readHashMap.get("--output-file") != null){
+                        this.readEntry(readEntry, readHashMap);
+					} else {
+						try {
+							int readEntryId = Integer.parseInt(readHashMap.get("--entry-id"));
+							Entry readEntry = this.getEntry(readEntryId);
+							this.readEntry(readEntry);
+						} catch (NumberFormatException e) {
+							System.out.println("Unrecognized read option: " + readHashMap.get("--entry-id"));
+						}
+					}
                 } else if (readHashMap.get("--search-results") != null && readHashMap.get("--search-results").equalsIgnoreCase("true")) {
                     this.printSearchResults();
                 } else if (readHashMap.get("--many") != null && readHashMap.get("--many").equalsIgnoreCase("true")) {
@@ -633,6 +666,7 @@ public class Library {
                 } else {
                     System.out.println("Could not execute read operation.");
                 }
+				
                 break;
                 
 			case "u":
